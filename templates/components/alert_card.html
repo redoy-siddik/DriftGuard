@@ -1,0 +1,38 @@
+<div class="bg-slate-800/90 border border-slate-700 p-4 rounded-xl shadow-md flex items-start space-x-3 transition-all hover:border-slate-600">
+  <div class="pt-0.5">
+    {% if alert.severity == 'critical' %}
+      <div class="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400">
+        <i class="fa-solid fa-circle-exclamation text-base"></i>
+      </div>
+    {% else %}
+      <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+        <i class="fa-solid fa-triangle-exclamation text-base"></i>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center justify-between">
+      <a href="{% url 'dashboard:node_detail' node_id=alert.node.node_id %}" class="text-sm font-bold text-white hover:text-blue-400 transition-colors">
+        {{ alert.node.node_id }}
+      </a>
+      <span class="text-xs text-slate-400 font-mono">{{ alert.triggered_at|date:"M d, H:i" }}</span>
+    </div>
+    <p class="text-xs text-slate-300 mt-1 line-clamp-2">{{ alert.message }}</p>
+
+    <div class="mt-3 flex items-center justify-between text-xs">
+      <span class="px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider
+        {% if alert.status == 'open' %}bg-rose-500/10 text-rose-400 border border-rose-500/20
+        {% elif alert.status == 'acknowledged' %}bg-amber-500/10 text-amber-400 border border-amber-500/20
+        {% else %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% endif %}">
+        {{ alert.status }}
+      </span>
+
+      {% if alert.status == 'open' %}
+        <button onclick="promptAcknowledge({{ alert.id }})" class="text-xs text-blue-400 hover:text-blue-300 font-medium">
+          Acknowledge &rarr;
+        </button>
+      {% endif %}
+    </div>
+  </div>
+</div>

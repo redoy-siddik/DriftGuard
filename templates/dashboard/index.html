@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Cluster Overview — DriftGuard GPU Health{% endblock %}
+
+{% block page_header %}
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-extrabold text-white tracking-tight">GPU Cluster Operational Overview</h1>
+    <p class="text-xs text-slate-400 mt-1">Real-time behavioral drift monitoring and multi-layer ML anomaly detection</p>
+  </div>
+  <div class="flex items-center space-x-3">
+    <button id="btn-generate-telemetry" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all flex items-center space-x-2">
+      <i class="fa-solid fa-bolt text-amber-400"></i>
+      <span>Generate Telemetry</span>
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Stat Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+  {% include 'components/stat_card.html' with title="Total GPU Nodes" value=total_nodes card_id="stat-total-nodes" icon="fa-server" bg_color="bg-blue-500/10" text_color="text-blue-400" border_color="border-blue-500/20" %}
+  {% include 'components/stat_card.html' with title="Normal Status" value=nodes_normal card_id="stat-normal-nodes" icon="fa-circle-check" bg_color="bg-emerald-500/10" text_color="text-emerald-400" border_color="border-emerald-500/20" %}
+  {% include 'components/stat_card.html' with title="Warning State" value=nodes_warning card_id="stat-warning-nodes" icon="fa-triangle-exclamation" bg_color="bg-amber-500/10" text_color="text-amber-400" border_color="border-amber-500/20" %}
+  {% include 'components/stat_card.html' with title="Critical State" value=nodes_critical card_id="stat-critical-nodes" icon="fa-circle-radiation" bg_color="bg-rose-500/10" text_color="text-rose-400" border_color="border-rose-500/20" %}
+  {% include 'components/stat_card.html' with title="Open Alerts" value=open_alerts card_id="stat-open-alerts" icon="fa-bell" bg_color="bg-purple-500/10" text_color="text-purple-400" border_color="border-purple-500/20" %}
+</div>
+
+<!-- Main Split Layout: GPU Nodes Matrix & Recent Alerts -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Node Matrix Table (2 cols) -->
+  <div class="lg:col-span-2 bg-slate-800 border border-slate-700/80 rounded-xl shadow-lg flex flex-col">
+    <div class="p-5 border-b border-slate-700/80 flex items-center justify-between">
+      <div>
+        <h2 class="text-base font-bold text-white flex items-center space-x-2">
+          <i class="fa-solid fa-microchip text-blue-400"></i>
+          <span>GPU Nodes Matrix</span>
+        </h2>
+        <p class="text-xs text-slate-400">Per-node operational telemetry and drift severity</p>
+      </div>
+      <span class="text-xs text-slate-400 font-mono">{{ nodes|length }} Active Nodes</span>
+    </div>
+
+    <div class="overflow-x-auto flex-1">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-900/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700/60">
+          <tr>
+            <th class="px-5 py-3.5">Node ID</th>
+            <th class="px-5 py-3.5">GPU Model</th>
+            <th class="px-5 py-3.5">Status</th>
+            <th class="px-5 py-3.5">Composite Drift</th>
+            <th class="px-5 py-3.5 text-right">Temp / Util</th>
+            <th class="px-5 py-3.5 text-right">Last Seen</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-700/50 text-slate-200 font-medium" id="node-matrix-body">
+          {% for node in nodes %}
+          {% with ds=node.latest_drift_score snap=node.telemetry_snapshots.first %}
+          <tr onclick="window.location='{{ node.get_absolute_url }}'" class="hover:bg-slate-750 cursor-pointer transition-colors">
+            <td class="px-5 py-4 font-mono font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-server text-slate-500"></i>
+              <span>{{ node.node_id }}</span>
+            </td>
+            <td class="px-5 py-4 text-slate-300">{{ node.gpu_model }}</td>
+            <td class="px-5 py-4">
+              {% include 'components/node_status_badge.html' with status=node.current_status %}
+            </td>
+            <td class="px-5 py-4">
+              <div class="flex items-center space-x-2">
+                <div class="w-24 bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-700">
+                  {% if ds %}
+                    {% if ds.composite_score >= 3.5 %}
+                      <div class="bg-rose-500 h-2 rounded-full" style="width: 100%"></div>
+                    {% elif ds.composite_score >= 2.0 %}
+                      <div class="bg-amber-400 h-2 rounded-full" style="width: {% widthratio ds.composite_score 3.5 100 %}%"></div>
+                    {% else %}
+                      <div class="bg-emerald-400 h-2 rounded-full" style="width: {% widthratio ds.composite_score 3.5 100 %}%"></div>
+                    {% endif %}
+                  {% else %}
+                    <div class="bg-slate-600 h-2 rounded-full" style="width: 0%"></div>
+                  {% endif %}
+                </div>
+                <span class="font-mono text-xs font-bold text-slate-200">
+                  {% if ds %}{{ ds.composite_score|floatformat:2 }}{% else %}0.00{% endif %}
+                </span>
+              </div>
+            </td>
+            <td class="px-5 py-4 text-right font-mono">
+              {% if snap %}
+                <span class="{% if snap.temperature_c > 80 %}text-rose-400{% else %}text-slate-300{% endif %}">{{ snap.temperature_c|floatformat:1 }}°C</span>
+                <span class="text-slate-500">/</span>
+                <span class="text-slate-300">{{ snap.utilization_pct|floatformat:0 }}%</span>
+              {% else %}
+                <span class="text-slate-500">N/A</span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-4 text-right text-slate-400 font-mono">
+              {% if node.last_seen %}{{ node.last_seen|date:"H:i:s" }}{% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Alerts Panel (1 col) -->
+  <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-5 shadow-lg flex flex-col">
+    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-700/80">
+      <h2 class="text-base font-bold text-white flex items-center space-x-2">
+        <i class="fa-solid fa-bell text-purple-400"></i>
+        <span>Active Alerts</span>
+      </h2>
+      <a href="{% url 'dashboard:alerts' %}" class="text-xs text-blue-400 hover:text-blue-300 font-medium">View All &rarr;</a>
+    </div>
+
+    <div class="space-y-3 overflow-y-auto max-h-[520px] pr-1" id="recent-alerts-list">
+      {% for alert in recent_alerts %}
+        {% include 'components/alert_card.html' with alert=alert %}
+      {% empty %}
+        <div class="text-center py-12 text-slate-500 text-xs">
+          <i class="fa-solid fa-shield-cat text-3xl mb-2 block text-slate-600"></i>
+          No recent drift alerts recorded
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

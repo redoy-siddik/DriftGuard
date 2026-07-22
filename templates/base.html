@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}DriftGuard — Predictive GPU Health Monitoring{% endblock %}</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              850: '#172033',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <!-- Chart.js 4.x -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <!-- App CSS -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+</head>
+<body class="h-full font-sans antialiased bg-slate-900 text-slate-100 flex flex-col">
+
+  <!-- Top Navbar -->
+  {% include 'components/navbar.html' %}
+
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Left Sidebar -->
+    {% include 'components/sidebar.html' %}
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-900">
+      {% block page_header %}{% endblock %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- App JS -->
+  <script src="{% static 'js/refresh.js' %}"></script>
+  <script src="{% static 'js/alerts.js' %}"></script>
+  <script src="{% static 'js/charts.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
