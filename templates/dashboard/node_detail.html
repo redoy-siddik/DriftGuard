@@ -163,8 +163,11 @@
 {% endblock %}
 
 {% block extra_js %}
+<script id="chart-data" type="application/json">
+{{ chart_data_json|safe }}
+</script>
 <script>
   window.NODE_ID = "{{ node.node_id }}";
-  window.CHART_DATA_RAW = {{ chart_data_json|safe }};
+  window.CHART_DATA_RAW = JSON.parse(document.getElementById('chart-data').textContent);
 </script>
 {% endblock %}

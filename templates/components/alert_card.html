@@ -29,7 +29,7 @@
       </span>
 
       {% if alert.status == 'open' %}
-        <button onclick="promptAcknowledge({{ alert.id }})" class="text-xs text-blue-400 hover:text-blue-300 font-medium">
+        <button onclick="promptAcknowledge('{{ alert.id }}')" class="text-xs text-blue-400 hover:text-blue-300 font-medium">
           Acknowledge &rarr;
         </button>
       {% endif %}
