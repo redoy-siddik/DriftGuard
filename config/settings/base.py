@@ -60,12 +60,20 @@ WHITENOISE_MANIFEST_STRICT = False
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.StandardResultsPagination',
     'PAGE_SIZE': 100,
-    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
-    'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser'],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
 }
-
-CORS_ALLOWED_ORIGINS = [origin for origin in os.environ.get('CORS_ORIGINS', 'http://localhost:8000').split(',') if origin]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -83,3 +91,15 @@ LOGGING = {
         'apps.detection': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
     },
 }
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000'
+).split(',')
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
+CORS_ALLOW_HEADERS = [
+    'accept', 'accept-encoding', 'authorization',
+    'content-type', 'dnt', 'origin',
+    'user-agent', 'x-csrftoken', 'x-requested-with',
+]

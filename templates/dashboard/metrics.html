@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Unified Metrics — DriftGuard{% endblock %}
+
+{% block page_header %}
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-extrabold text-white tracking-tight">Unified Metrics</h1>
+    <p class="text-xs text-slate-400 mt-1">Consolidated operational metrics across cluster, telemetry, detection, and alerts</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+  <!-- Cluster Metrics -->
+  <div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 space-y-3">
+    <h2 class="text-sm font-bold text-cyan-400 uppercase tracking-wider flex items-center space-x-2">
+      <i class="fa-solid fa-server"></i><span>Cluster</span>
+    </h2>
+    <div class="space-y-2 text-sm text-slate-300">
+      <div class="flex justify-between"><span>Total Nodes</span><span class="font-mono text-white">{{ metrics.cluster.total_nodes }}</span></div>
+      <div class="flex justify-between"><span>Active Nodes</span><span class="font-mono text-white">{{ metrics.cluster.active_nodes }}</span></div>
+      {% for status, count in metrics.cluster.status_breakdown.items %}
+      <div class="flex justify-between"><span class="capitalize">{{ status }}</span><span class="font-mono text-white">{{ count }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Telemetry Metrics -->
+  <div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 space-y-3">
+    <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center space-x-2">
+      <i class="fa-solid fa-chart-line"></i><span>Telemetry</span>
+    </h2>
+    <div class="space-y-2 text-sm text-slate-300">
+      <div class="flex justify-between"><span>Total Snapshots</span><span class="font-mono text-white">{{ metrics.telemetry.total_snapshots }}</span></div>
+      <div class="flex justify-between"><span>Last 24h</span><span class="font-mono text-white">{{ metrics.telemetry.snapshots_24h }}</span></div>
+      <div class="flex justify-between"><span>Injected Failures</span><span class="font-mono text-amber-400">{{ metrics.telemetry.injected_failures }}</span></div>
+    </div>
+  </div>
+
+  <!-- Detection Metrics -->
+  <div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 space-y-3">
+    <h2 class="text-sm font-bold text-violet-400 uppercase tracking-wider flex items-center space-x-2">
+      <i class="fa-solid fa-magnifying-glass-chart"></i><span>Detection</span>
+    </h2>
+    <div class="space-y-2 text-sm text-slate-300">
+      <div class="flex justify-between"><span>Total Scores</span><span class="font-mono text-white">{{ metrics.detection.total_scores }}</span></div>
+      <div class="flex justify-between"><span>Scores (24h)</span><span class="font-mono text-white">{{ metrics.detection.scores_24h }}</span></div>
+      <div class="flex justify-between"><span>IF Models Trained</span><span class="font-mono text-white">{{ metrics.detection.if_models_trained }}</span></div>
+      {% for status, count in metrics.detection.status_breakdown_7d.items %}
+      <div class="flex justify-between"><span class="capitalize">{{ status }} (7d)</span><span class="font-mono text-white">{{ count }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Alert Metrics -->
+  <div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 space-y-3">
+    <h2 class="text-sm font-bold text-rose-400 uppercase tracking-wider flex items-center space-x-2">
+      <i class="fa-solid fa-bell"></i><span>Alerts</span>
+    </h2>
+    <div class="space-y-2 text-sm text-slate-300">
+      <div class="flex justify-between"><span>Open</span><span class="font-mono text-rose-400">{{ metrics.alerts.open }}</span></div>
+      <div class="flex justify-between"><span>Critical Open</span><span class="font-mono text-red-400">{{ metrics.alerts.critical_open }}</span></div>
+      <div class="flex justify-between"><span>Acknowledged</span><span class="font-mono text-amber-400">{{ metrics.alerts.acknowledged }}</span></div>
+      <div class="flex justify-between"><span>Resolved</span><span class="font-mono text-emerald-400">{{ metrics.alerts.resolved }}</span></div>
+      <div class="flex justify-between"><span>Triggered (24h)</span><span class="font-mono text-white">{{ metrics.alerts.triggered_24h }}</span></div>
+      <div class="flex justify-between"><span>Resolved (7d)</span><span class="font-mono text-white">{{ metrics.alerts.resolved_7d }}</span></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
